@@ -1,0 +1,81 @@
+# Project Implementation Plan: Algorithmic Trading Bot
+
+This document outlines the steps taken to develop the Python-based algorithmic trading bot.
+
+## Core Requirements:
+- Bollinger Bands and Williams %R based trading.
+- Korea Investment & Securities (KIS) API integration.
+- Python-based UI.
+- Extensible design.
+
+## Implemented Steps:
+
+1.  **Setup Project Structure and Basic FastAPI App:**
+    *   Created directories: `core`, `models`, `api`, `ui`, `services`, `scheduler`.
+    *   Initialized a basic FastAPI application in `main.py`.
+    *   Created `utils.py` (currently minimal).
+    *   Updated `backend/requirements.txt` with necessary libraries (FastAPI, Uvicorn, Pydantic, python-dotenv, requests, pandas, numpy, ta, APScheduler, Streamlit) and created `backend/requirements-dev.txt`.
+    *   Created `.env` template for API keys.
+
+2.  **Environment Variable Management:**
+    *   Implemented logic in `core/config.py` to load API keys (KIS_APP_KEY, KIS_APP_SECRET) and other configurations from a `.env` file using `python-dotenv`.
+
+3.  **Korea Investment & Securities API Integration:**
+    *   Developed `core/kis_api.py` module to handle communication with the KIS API.
+    *   Includes placeholder functions for: Authentication (token fetching/management), fetching stock data (current price, historical data), placing buy/sell orders, and checking account balance.
+    *   Includes basic error handling, logging, and session management.
+    *   **Note:** This module contains placeholder API endpoint URLs and request/response structures that need to be verified against official KIS API documentation for full functionality.
+
+4.  **Trading Logic Implementation:**
+    *   Implemented `core/indicators.py` with functions to calculate Bollinger Bands and Williams %R using the `ta` library.
+    *   Developed `services/trading_service.py` with a `TradingService` class. This service:
+        *   Fetches data using `kis_api.py`.
+        *   Calculates indicators using `core/indicators.py`.
+        *   Applies trading rules based on Bollinger Bands and Williams %R to generate BUY/SELL/HOLD signals with reasons.
+        *   Includes methods for `analyze_stock` and `scan_stocks`.
+
+5.  **Data Models:**
+    *   Defined Pydantic models in `models/trade.py` for:
+        *   `Stock`, `OrderInput`, `OrderOutput`, `TradingSignal`, `PortfolioPosition`, `AccountSummary`, `Portfolio`, `StockScanRequest`.
+    *   These models are used for API request/response validation and internal data structuring.
+
+6.  **API Endpoints:**
+    *   Created API endpoints in `api/trading.py` using FastAPI:
+        *   `POST /api/scan_stocks`: Analyzes stocks and returns trading signals.
+        *   `POST /api/execute_trade`: Places a trade order.
+        *   `GET /api/portfolio`: Returns current portfolio and account balance.
+        *   `GET /api/trade_history` (Placeholder): Intended for fetching trade history.
+    *   `main.py` was updated to include this API router.
+
+7.  **User Interface (Streamlit):**
+    *   Added `streamlit` to `backend/requirements.txt`.
+    *   Created `ui/app_ui.py` with a Streamlit-based web interface. The UI allows users to:
+        *   View portfolio (summary and holdings).
+        *   Input stock symbols to scan for trading signals.
+        *   View detailed scan results.
+        *   Manually execute trades (BUY/SELL, Limit/Market).
+    *   The UI communicates with the FastAPI backend.
+
+8.  **Scheduling Mechanism:**
+    *   Implemented a scheduler using `APScheduler`.
+    *   Created `scheduler/jobs.py` with a sample job (`scheduled_stock_scan_job`) that uses the `TradingService` to periodically scan a predefined list of stocks and log the generated signals.
+    *   `main.py` was updated to initialize `APScheduler`, add the job, and manage the scheduler's lifecycle with FastAPI startup/shutdown events.
+
+9.  **Extensibility and Design Patterns:**
+    *   Reviewed and improved code structure for better separation of concerns (Service-Oriented Architecture principles).
+    *   `TradingService` now encapsulates more business logic, including order execution and portfolio retrieval, which are called by the API endpoints.
+    *   FastAPI's dependency injection is used for providing services to endpoints.
+    *   Added comments in `services/trading_service.py` outlining how the Strategy pattern could be implemented for more flexible trading rule management in the future.
+
+10. **Documentation and Plan File (This Step):**
+    *   Created this `PLAN.txt` file.
+    *   Updated `README.md` with setup and usage instructions.
+    *   Ensured key modules and classes have basic docstrings.
+
+11. **Testing (Next Step):**
+    *   Unit tests for indicator calculations and trading logic.
+    *   API endpoint functionality tests.
+    *   (Consider integration tests for KIS API if a paper trading account is available).
+
+12. **Refinement and Error Handling (Ongoing):**
+    *   Robust error handling and logging are implemented throughout the application. Further refinements can be made as needed.

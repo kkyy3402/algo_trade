@@ -5,3 +5,12 @@ passlib[bcrypt]
 sqlalchemy
 psycopg2-binary
 alembic
+
+# Trading Bot Specific Dependencies
+python-dotenv
+requests
+pandas
+numpy
+ta
+APScheduler
+streamlit
