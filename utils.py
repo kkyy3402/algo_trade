@@ -1,2 +1,2 @@
-# Helper functions will be added here
-# For example, logging setup, common data transformations, etc.
+# 여기에 헬퍼 함수들이 추가될 예정입니다.
+# 예: 로깅 설정, 공통 데이터 변환 등.

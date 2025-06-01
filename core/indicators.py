@@ -4,14 +4,14 @@ from ta.momentum import WilliamsRIndicator
 
 def calculate_bollinger_bands(data: pd.DataFrame, window: int = 20, window_dev: int = 2, column_name: str = "close"):
     """
-    Calculates Bollinger Bands.
-    Assumes 'data' is a Pandas DataFrame with a column specified by 'column_name' (e.g., 'close').
-    Returns the DataFrame with new columns: 'bb_mavg', 'bb_hband', 'bb_lband', 'bb_pband', 'bb_wband'.
+    볼린저 밴드를 계산합니다.
+    데이터프레임 'data'에 'column_name'으로 지정된 열(예: 'close')이 있다고 가정합니다.
+    새로운 열('bb_mavg', 'bb_hband', 'bb_lband', 'bb_pband', 'bb_wband')이 추가된 데이터프레임을 반환합니다.
     """
     if column_name not in data.columns:
-        raise ValueError(f"Column '{column_name}' not found in DataFrame for Bollinger Bands calculation.")
+        raise ValueError(f"볼린저 밴드 계산을 위해 데이터프레임에 '{column_name}' 열이 없습니다.")
     if len(data) < window:
-        # Not enough data to calculate; return DataFrame with empty BB columns or handle as appropriate
+        # 계산할 데이터 부족; BB 열이 비어있는 데이터프레임 반환 또는 적절히 처리
         data['bb_mavg'] = pd.NA
         data['bb_hband'] = pd.NA
         data['bb_lband'] = pd.NA
@@ -21,36 +21,36 @@ def calculate_bollinger_bands(data: pd.DataFrame, window: int = 20, window_dev: 
 
     indicator_bb = BollingerBands(close=data[column_name], window=window, window_dev=window_dev)
 
-    data['bb_mavg'] = indicator_bb.bollinger_mavg()        # Middle Band
-    data['bb_hband'] = indicator_bb.bollinger_hband()      # Upper Band
-    data['bb_lband'] = indicator_bb.bollinger_lband()      # Lower Band
-    data['bb_pband'] = indicator_bb.bollinger_pband()      # Percentage Band (%B)
-    data['bb_wband'] = indicator_bb.bollinger_wband()      # Bandwidth
+    data['bb_mavg'] = indicator_bb.bollinger_mavg()        # 중간 밴드
+    data['bb_hband'] = indicator_bb.bollinger_hband()      # 상단 밴드
+    data['bb_lband'] = indicator_bb.bollinger_lband()      # 하단 밴드
+    data['bb_pband'] = indicator_bb.bollinger_pband()      # 퍼센트 밴드 (%B)
+    data['bb_wband'] = indicator_bb.bollinger_wband()      # 밴드폭
 
     return data
 
 def calculate_williams_r(data: pd.DataFrame, period: int = 14):
     """
-    Calculates Williams %R.
-    Assumes 'data' is a Pandas DataFrame with 'high', 'low', and 'close' columns.
-    Returns the DataFrame with a new column: 'wr'.
+    Williams %R을 계산합니다.
+    데이터프레임 'data'에 'high', 'low', 'close' 열이 있다고 가정합니다.
+    새로운 열 'wr'이 추가된 데이터프레임을 반환합니다.
     """
     required_cols = ["high", "low", "close"]
     if not all(col in data.columns for col in required_cols):
-        raise ValueError(f"DataFrame must contain {required_cols} columns for Williams %R calculation.")
+        raise ValueError(f"Williams %R 계산을 위해 데이터프레임에 {required_cols} 열이 있어야 합니다.")
     if len(data) < period:
-        # Not enough data
+        # 데이터 부족
         data['wr'] = pd.NA
         return data
 
     indicator_wr = WilliamsRIndicator(high=data['high'], low=data['low'], close=data['close'], lbp=period)
 
-    data['wr'] = indicator_wr.williams_r() # Williams %R
+    data['wr'] = indicator_wr.williams_r() # Williams %R 지표
 
     return data
 
 if __name__ == '__main__':
-    # Create a sample DataFrame for testing
+    # 테스트용 샘플 데이터프레임 생성
     sample_data = {
         'timestamp': pd.to_datetime(['2023-01-01', '2023-01-02', '2023-01-03', '2023-01-04', '2023-01-05',
                                       '2023-01-06', '2023-01-07', '2023-01-08', '2023-01-09', '2023-01-10',
@@ -66,25 +66,25 @@ if __name__ == '__main__':
     df = pd.DataFrame(sample_data)
     df.set_index('timestamp', inplace=True)
 
-    print("Original DataFrame:")
+    print("원본 데이터프레임:")
     print(df.head())
 
-    # Test Bollinger Bands
-    df_bb = calculate_bollinger_bands(df.copy(), window=5, window_dev=2) # Using smaller window for small dataset
-    print("\nDataFrame with Bollinger Bands (window=5):")
+    # 볼린저 밴드 테스트
+    df_bb = calculate_bollinger_bands(df.copy(), window=5, window_dev=2) # 작은 데이터셋을 위해 작은 윈도우 사용
+    print("\n볼린저 밴드 추가된 데이터프레임 (윈도우=5):")
     print(df_bb[['close', 'bb_mavg', 'bb_hband', 'bb_lband']].tail())
 
-    # Test Williams %R
-    df_wr = calculate_williams_r(df.copy(), period=7) # Using smaller period for small dataset
-    print("\nDataFrame with Williams %R (period=7):")
+    # Williams %R 테스트
+    df_wr = calculate_williams_r(df.copy(), period=7) # 작은 데이터셋을 위해 작은 기간 사용
+    print("\nWilliams %R 추가된 데이터프레임 (기간=7):")
     print(df_wr[['high', 'low', 'close', 'wr']].tail())
 
-    # Test with insufficient data
-    print("\nTesting with insufficient data for BB (window=30):")
+    # 불충분한 데이터로 테스트
+    print("\nBB 불충분한 데이터로 테스트 (윈도우=30):")
     df_short = df.head(3).copy()
     df_short_bb = calculate_bollinger_bands(df_short, window=30)
     print(df_short_bb[['close', 'bb_mavg', 'bb_hband', 'bb_lband']].tail())
 
-    print("\nTesting with insufficient data for WR (period=30):")
+    print("\nWR 불충분한 데이터로 테스트 (기간=30):")
     df_short_wr = calculate_williams_r(df_short, period=30)
     print(df_short_wr[['high', 'low', 'close', 'wr']].tail())
